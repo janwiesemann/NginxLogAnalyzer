@@ -6,6 +6,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Globalization;
 
 namespace NginxLogAnalyzer
 {
@@ -89,6 +90,104 @@ namespace NginxLogAnalyzer
         All = -1
     }
 
+    abstract class AccessEntryFilterBase
+    {
+        public string ParameterName { get; }
+        public abstract bool HasValue { get; }
+
+        public AccessEntryFilterBase(string paramName)
+        {
+            ParameterName = paramName;
+        }
+
+        public abstract bool Matches(AccessEntry entry);
+    }
+
+    abstract class AccessEntryValueFilterBase<T> : AccessEntryFilterBase
+    {
+        public T Value { get; }
+        public override bool HasValue { get; }
+
+        public AccessEntryValueFilterBase(string paramName) : base(paramName)
+        {
+            string valStr = GetValue();
+
+            if (valStr != null)
+            {
+                Value = ConvertToValue(valStr);
+                HasValue = Value != null;
+            }
+            else
+                HasValue = false;
+        }
+
+        protected abstract T ConvertToValue(string valStr);
+
+        public override string ToString()
+        {
+            return $"{ParameterName}: {Value}";
+        }
+
+        private string GetValue()
+        {
+            string name = "--" + ParameterName;
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i].IndexOf(name, StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    if (args[i].IndexOf('=') == name.Length)
+                        return args[i].Substring(name.Length + 1);
+                    else
+                        return null;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    class AccessEntryFilterFieldMatchesValue : AccessEntryValueFilterBase<string>
+    {
+        private readonly Func<AccessEntry, object> fieldSelect;
+
+        public AccessEntryFilterFieldMatchesValue(string paramName, Func<AccessEntry, object> fieldSelect) : base(paramName)
+        {
+            this.fieldSelect = fieldSelect;
+        }
+
+        public override bool Matches(AccessEntry entry)
+        {
+            object obj = fieldSelect(entry);
+
+            return obj.ToString() == Value;
+        }
+
+        protected override string ConvertToValue(string valStr) => valStr;
+    }
+
+    class AccessEntryFilterAccessTime : AccessEntryValueFilterBase<DateTime?>
+    {
+        public AccessEntryFilterAccessTime() : base("accessTime")
+        { }
+
+        public override bool Matches(AccessEntry entry)
+        {
+            if (Value == null)
+                return false;
+
+            return entry.DateTime >= Value.Value;
+        }
+
+        protected override DateTime? ConvertToValue(string valStr)
+        {
+            if (DateTime.TryParseExact(valStr, "dd.MM.yyyy-hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime date))
+                return date;
+
+            return null;
+        }
+    }
+
     static class MainClass
     {
         private static AnalyzerSwitches ParseSwitches(string[] args)
@@ -103,7 +202,7 @@ namespace NginxLogAnalyzer
             AnalyzerSwitches ret = AnalyzerSwitches.None;
             for (int i = 0; i < args.Length; i++)
             {
-                if (!args[i].StartsWith("-"))
+                if (!args[i].StartsWith("-") || args[i].StartsWith("--"))
                     continue;
 
                 for (int j = 1; j < args[i].Length; j++)
@@ -146,9 +245,7 @@ namespace NginxLogAnalyzer
             ReadWhile(line, ref offset, (c, sb) => c != '[');
 
             string dateString = ReadWhile(line, ref offset, (c, sb) => c != ']');
-
-            if (DateTime.TryParse(dateString, out DateTime res))
-                return DateTime.MinValue;
+            DateTime.TryParseExact(dateString, "dd/MMM/yyyy:hh:mm:ss K", null, DateTimeStyles.None, out DateTime res);
 
             return res;
         }
@@ -182,11 +279,12 @@ namespace NginxLogAnalyzer
             };
         }
 
-        private static void ReadFile(string file, bool sourceIsDirectory, Dictionary<string, RemoteAddress> addresses)
+        private static void ReadFile(string file, bool sourceIsDirectory, Dictionary<string, RemoteAddress> addresses, AccessEntryFilterBase[] accessEntryFilters)
         {
             string filename = Path.GetFileName(file);
             if (sourceIsDirectory && filename.IndexOf("access.log", StringComparison.OrdinalIgnoreCase) != 0)
                 return;
+
 
             using (Stream stream = OpenFile(file))
             {
@@ -196,6 +294,22 @@ namespace NginxLogAnalyzer
                 while((line = reader.ReadLine()) != null)
                 {
                     AccessEntry entry = ParseAccessLine(line);
+         
+                    bool skipEntry = false;
+                    foreach (AccessEntryFilterBase item in accessEntryFilters)
+                    {
+                        if (!item.HasValue)
+                            continue;
+
+                        if (!item.Matches(entry))
+                        {
+                            skipEntry = true;
+                            break;
+                        }
+                    }
+
+                    if (skipEntry)
+                        continue;
 
                     if(!addresses.TryGetValue(entry.RemoteAddress, out RemoteAddress addr))
                     {
@@ -288,17 +402,39 @@ namespace NginxLogAnalyzer
                 Console.WriteLine("Using default Path: " + path);
             }
 
-            Dictionary<string, RemoteAddress> addresses = new Dictionary<string, RemoteAddress>();
+            AccessEntryFilterBase[] accessEntryFilters = GetAccesEntryFilers();
+            PrintFilters(accessEntryFilters);
 
+            Dictionary<string, RemoteAddress> addresses = new Dictionary<string, RemoteAddress>();
             if (isDir)
             {
                 foreach (var item in Directory.EnumerateFiles(path))
-                    ReadFile(item, true, addresses);
+                    ReadFile(item, true, addresses, accessEntryFilters);
             }
             else
-                ReadFile(path, false, addresses);
+                ReadFile(path, false, addresses, accessEntryFilters);
 
             return DictionaryToList(addresses);
+        }
+
+        private static void PrintFilters(AccessEntryFilterBase[] accessEntryFilters)
+        {
+            WriteHeader("Filters");
+
+            for (int i = 0; i < accessEntryFilters.Length; i++)
+            {
+                if(accessEntryFilters[i].HasValue)
+                    Console.WriteLine(accessEntryFilters[i].ToString());
+            }
+        }
+
+        private static AccessEntryFilterBase[] GetAccesEntryFilers()
+        {
+            return new AccessEntryFilterBase[]
+            {
+                new AccessEntryFilterFieldMatchesValue("Address", e => e.RemoteAddress),
+                new AccessEntryFilterAccessTime()
+            };
         }
 
         private static void PrintSwitches(AnalyzerSwitches switches)
