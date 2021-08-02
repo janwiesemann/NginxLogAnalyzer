@@ -10,184 +10,6 @@ using System.Globalization;
 
 namespace NginxLogAnalyzer
 {
-    class AccessEntry
-    {
-        public string RemoteAddress { get; set; }
-        public string ServerName { get; set; }
-        public string RemoteUser { get; set; }
-        public DateTime DateTime { get; set; }
-        public Request Request { get; set; }
-    }
-
-    class Request
-    {
-        public string Methode { get; set; }
-        public string URI { get; set; }
-        public string Version { get; set; }
-
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendMaxLength(10, Methode);
-            sb.Append(' ');
-            sb.AppendURI(URI);
-            sb.Append(' ');
-            sb.AppendMaxLength(10, Version);
-
-            return sb.ToString();
-        }
-    }
-
-    [DebuggerDisplay("{Address} => {AccessEntrys.Count}")]
-    class RemoteAddress
-    {
-        public RemoteAddress(string address)
-        {
-            Address = address;
-            AccessEntrys = new List<AccessEntry>();
-        }
-
-        public string Address { get; }
-        public List<AccessEntry> AccessEntrys { get; }
-    }
-
-    static class Extensions
-    {
-        public static void AppendMaxLength(this StringBuilder sb, int length, string str)
-        {
-            if (str == null)
-                return;
-
-            if (str.Length > length)
-                str = str.Substring(0, length - 3) + "...";
-
-            sb.Append(str);
-        }
-
-        public static void AppendURI(this StringBuilder sb, string url) =>             sb.AppendMaxLength(64, url);
-    }
-
-    static class ConsoleEx
-    {
-        public static void WriteURI(string uri)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendURI(uri);
-
-            Console.Write(sb.ToString());
-        }
-    }
-
-    [Flags]
-    enum AnalyzerSwitches
-    {
-        None = 0,
-
-        Addresses = 1 << 1,
-
-        Pages = 1 << 2,
-
-        All = -1
-    }
-
-    abstract class AccessEntryFilterBase
-    {
-        public string ParameterName { get; }
-        public abstract bool HasValue { get; }
-
-        public AccessEntryFilterBase(string paramName)
-        {
-            ParameterName = paramName;
-        }
-
-        public abstract bool Matches(AccessEntry entry);
-    }
-
-    abstract class AccessEntryValueFilterBase<T> : AccessEntryFilterBase
-    {
-        public T Value { get; }
-        public override bool HasValue { get; }
-
-        public AccessEntryValueFilterBase(string paramName) : base(paramName)
-        {
-            string valStr = GetValue();
-
-            if (valStr != null)
-            {
-                Value = ConvertToValue(valStr);
-                HasValue = Value != null;
-            }
-            else
-                HasValue = false;
-        }
-
-        protected abstract T ConvertToValue(string valStr);
-
-        public override string ToString()
-        {
-            return $"{ParameterName}: {Value}";
-        }
-
-        private string GetValue()
-        {
-            string name = "--" + ParameterName;
-            string[] args = Environment.GetCommandLineArgs();
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (args[i].IndexOf(name, StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    if (args[i].IndexOf('=') == name.Length)
-                        return args[i].Substring(name.Length + 1);
-                    else
-                        return null;
-                }
-            }
-
-            return null;
-        }
-    }
-
-    class AccessEntryFilterFieldMatchesValue : AccessEntryValueFilterBase<string>
-    {
-        private readonly Func<AccessEntry, object> fieldSelect;
-
-        public AccessEntryFilterFieldMatchesValue(string paramName, Func<AccessEntry, object> fieldSelect) : base(paramName)
-        {
-            this.fieldSelect = fieldSelect;
-        }
-
-        public override bool Matches(AccessEntry entry)
-        {
-            object obj = fieldSelect(entry);
-
-            return obj.ToString() == Value;
-        }
-
-        protected override string ConvertToValue(string valStr) => valStr;
-    }
-
-    class AccessEntryFilterAccessTime : AccessEntryValueFilterBase<DateTime?>
-    {
-        public AccessEntryFilterAccessTime() : base("accessTime")
-        { }
-
-        public override bool Matches(AccessEntry entry)
-        {
-            if (Value == null)
-                return false;
-
-            return entry.DateTime >= Value.Value;
-        }
-
-        protected override DateTime? ConvertToValue(string valStr)
-        {
-            if (DateTime.TryParseExact(valStr, "dd.MM.yyyy-hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime date))
-                return date;
-
-            return null;
-        }
-    }
-
     static class MainClass
     {
         private static AnalyzerSwitches ParseSwitches(string[] args)
@@ -402,8 +224,7 @@ namespace NginxLogAnalyzer
                 Console.WriteLine("Using default Path: " + path);
             }
 
-            AccessEntryFilterBase[] accessEntryFilters = GetAccesEntryFilers();
-            PrintFilters(accessEntryFilters);
+            AccessEntryFilterBase[] accessEntryFilters = GetAccesEntryFilers(args);
 
             Dictionary<string, RemoteAddress> addresses = new Dictionary<string, RemoteAddress>();
             if (isDir)
@@ -417,24 +238,24 @@ namespace NginxLogAnalyzer
             return DictionaryToList(addresses);
         }
 
-        private static void PrintFilters(AccessEntryFilterBase[] accessEntryFilters)
+        private static AccessEntryFilterBase[] GetAccesEntryFilers(string[] args)
         {
-            WriteHeader("Filters");
-
-            for (int i = 0; i < accessEntryFilters.Length; i++)
-            {
-                if(accessEntryFilters[i].HasValue)
-                    Console.WriteLine(accessEntryFilters[i].ToString());
-            }
-        }
-
-        private static AccessEntryFilterBase[] GetAccesEntryFilers()
-        {
-            return new AccessEntryFilterBase[]
+            AccessEntryFilterBase[] ret = new AccessEntryFilterBase[]
             {
                 new AccessEntryFilterFieldMatchesValue("Address", e => e.RemoteAddress),
                 new AccessEntryFilterAccessTime()
             };
+
+            WriteHeader("Filters");
+            foreach (AccessEntryFilterBase item in ret)
+            {
+                item.Parse(args);
+
+                if (item.HasValue)
+                    Console.WriteLine(item.ToString());
+            }
+
+            return ret;
         }
 
         private static void PrintSwitches(AnalyzerSwitches switches)
