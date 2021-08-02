@@ -75,6 +75,21 @@ Switch|Name|Description
  `-a` | Analyze by addresses | This will display a list where requests are grouped by IP
  `-p` | Analyze page accesses | This will display a list with the most requested pages
 
+## Filter
+
+By default no filters are set. Filters have to start with `--` and have to provide a value after `=`. For example: `--address=10.0.0.112` can be used this way:
+
+```shell
+dotnet NginxLogAnalyzer.dll --address=10.0.0.112
+```
+
+Following Filters are supported:
+
+Name | Format | Description
+--- | --- | ---
+`--address` | Any | Filters by address
+`--accessTime` | `dd.MM.yyyy-hh:mm:ss` (i.e. `01.08.2021-15:30:00`) | Newer than this date
+
  # Example
 
  # Default
