@@ -35,6 +35,7 @@ namespace NginxLogAnalyzer
                 sourceParamAndSource.Add(dir, new LogDirectorySource());
             }
 
+            WriteHeader("Reading");
             List<RemoteAddress> addresses = AccessLogParser.ReadSources(sourceParamAndSource, accessEntryFilters);
             if (addresses == null)
                 return;

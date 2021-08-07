@@ -23,7 +23,8 @@ namespace NginxLogAnalyzer
             return new List<ILogSource>
             {
                 new LogDirectorySource(),
-                new LogFileSource()
+                new LogFileSource(),
+                new LogSFTPSource()
             };
         }
 

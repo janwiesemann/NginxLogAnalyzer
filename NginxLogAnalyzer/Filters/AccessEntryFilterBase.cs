@@ -13,8 +13,6 @@ namespace NginxLogAnalyzer.Filter
             ParameterName = paramName;
         }
 
-        private Exception parseException;
-
         public abstract void Parse(string[] args);
 
         public abstract bool Matches(AccessEntry entry);

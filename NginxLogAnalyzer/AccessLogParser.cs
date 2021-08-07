@@ -109,7 +109,11 @@ namespace NginxLogAnalyzer
         {
             Dictionary<string, RemoteAddress> ret = new Dictionary<string, RemoteAddress>();
             foreach (KeyValuePair<string, ILogSource> item in sourceParamAndSource)
+            {
+                Console.WriteLine($"Reading source {item.Value.GetType().Name} ({item.Key})");
+
                 item.Value.ReadFile(item.Key, stream => ParseStream(stream, ret, accessEntryFilters));
+            }
 
             return ret.GetValuesAsList();
         }
