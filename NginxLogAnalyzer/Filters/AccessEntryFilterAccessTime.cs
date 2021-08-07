@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace NginxLogAnalyzer
+namespace NginxLogAnalyzer.Filter
 {
     class AccessEntryFilterAccessTime : AccessEntryValueFilterBase<DateTime?>
     {

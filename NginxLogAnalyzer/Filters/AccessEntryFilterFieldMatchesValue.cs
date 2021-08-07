@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NginxLogAnalyzer
+namespace NginxLogAnalyzer.Filter
 {
     class AccessEntryFilterFieldMatchesValue : AccessEntryValueFilterBase<string>
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NginxLogAnalyzer
+namespace NginxLogAnalyzer.Filter
 {
     abstract class AccessEntryValueFilterBase<T> : AccessEntryFilterBase
     {

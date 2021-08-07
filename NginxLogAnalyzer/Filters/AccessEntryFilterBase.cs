@@ -1,9 +1,11 @@
 ﻿using System;
-namespace NginxLogAnalyzer
+
+namespace NginxLogAnalyzer.Filter
 {
     abstract class AccessEntryFilterBase
     {
         public string ParameterName { get; }
+
         public bool HasValue { get; protected set; }
 
         public AccessEntryFilterBase(string paramName)

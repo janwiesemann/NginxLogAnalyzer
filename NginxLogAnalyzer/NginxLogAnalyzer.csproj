@@ -7,5 +7,17 @@
 
   <ItemGroup>
     <None Remove="Whois" />
+    <None Remove="SSH.NET" />
+    <None Remove="Analyzer\" />
+    <None Remove="Sources\" />
+    <None Remove="Filters\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SSH.NET" Version="2020.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Analyzer\" />
+    <Folder Include="Sources\" />
+    <Folder Include="Filters\" />
   </ItemGroup>
 </Project>
