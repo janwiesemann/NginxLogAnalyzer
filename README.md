@@ -10,11 +10,23 @@ This application is writen in C#. This means you have to install .NET 5. You can
 
 ## Build and run
 
+### TLDR
+
+Info | Command
+--- | ---
+Default Directory (see below) | `dotnet NginxLogAnalyzer.dll`
+Directory as Source | `dotnet NginxLogAnalyzer.dll /var/log/nginx/`
+File as Source | `dotnet NginxLogAnalyzer.dll /var/log/nginx/access.log` or `dotnet NginxLogAnalyzer.dll /var/log/nginx/access.log.2.gz`
+
 ### Build
 
 ```shell
 dotnet build ./NginxLogAnalyzer/NginxLogAnalyzer.csproj
 ```
+
+### Build as Standalone executable
+
+If you want to tun this application without installing .NET you can follow this article: [https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish)
 
 ### Run
 
@@ -41,29 +53,35 @@ dotnet run --project ./NginxLogAnalyzer/NginxLogAnalyzer.csproj -- /var/log/ngin
 ```
 
 
-## Analyzing directory
+## Sources
+
+You can use following log sources:
+
+Name | Example | Info
+--- | --- | ---
+Directory | `/var/log/nginx/` | This will load all files starting with the name `access.`(`access.log`, `access.log.1`, `access.log.2.gz`)
+File | `/var/log/nginx/access.log` | Text file or `.gz` compressed (compressed Files must end with `.gz`)
+SFTP | `sftp://user:password@10.0.0.1/var/log/nginx/` | This can be used to specify a remote Server as Source. This will connect to `10.0.0.1` using `user` as username, `password` as password and analyze all files in `/var/log/nginx` Currently you can not use a Key file as Login.
+
+You can use a single Source 
 
 ```shell
 dotnet NginxLogAnalyzer.dll /var/log/nginx/
 ```
 
-if you do not specify this argument the tool will use default pats. These are
+Or multiple sources
+
+```shell
+dotnet NginxLogAnalyzer.dll /var/log/nginx/ sftp://user:root@10.0.0.1/var/log/nginx/
+```
+
+### Default
+
+if you do not specify a source argument the tool will use default directorys as source These are
 OS | Path | Note
 --- | --- | ---
-macOS | /usr/local/var/log/nginx/ | default homebrew path
-Linux | /var/log/nginx/ | default
-
-## Analyzing file
-
-```shell
-dotnet NginxLogAnalyzer.dll /var/log/nginx/access.log
-```
-
-you can also use a `.gz` file
-
-```shell
-dotnet NginxLogAnalyzer.dll /var/log/nginx/access.log.2.gz
-```
+macOS | `/usr/local/var/log/nginx/` | default homebrew path
+Linux | `/var/log/nginx/` | default
 
 ## Switches
 
@@ -90,16 +108,17 @@ Name | Format | Description
 `--address` | Any | Filters by address
 `--accessTime` | `dd.MM.yyyy-hh:mm:ss` (i.e. `01.08.2021-15:30:00`) | Newer than this date
 
- # Example
+ # Examples
 
- # Default
+## Default Path
 
-This will analyze the default log dir. (see `Usage -> Analyzing directory`)
+This will analyze the default log dir.
 
 ```shell
 dotnet NginxLogAnalyzer.dll
 ```
-# Path and Switches
+
+## Path and Switches
 
 ```shell
 dotnet NginxLogAnalyzer.dll /var/log/nginx/ -A
