@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using NginxLogAnalyzer.Analyzer;
-using NginxLogAnalyzer.Filter;
+using NginxLogAnalyzer.Filters;
+using NginxLogAnalyzer.Settings;
 using NginxLogAnalyzer.Sources;
 
 namespace NginxLogAnalyzer
 {
     internal static class Setup
     {
+
         private static List<T> GetInstancesOfType<T>()
+        {
+            return GetInstancesOfType<T>(null);
+        }
+
+        private static List<T> GetInstancesOfType<T>(Predicate<Type> additionalTypeFilter)
         {
             List<T> ret = new List<T>();
             foreach (Type type in typeof(T).Assembly.GetTypes())
@@ -22,6 +29,9 @@ namespace NginxLogAnalyzer
                     continue;
 
                 if (type.IsInterface)
+                    continue;
+
+                if (additionalTypeFilter != null && !additionalTypeFilter(type))
                     continue;
 
                 bool hasConstructorWithouParameters = false;
@@ -44,10 +54,19 @@ namespace NginxLogAnalyzer
             return ret;
         }
 
-        public static List<AccessEntryFilterBase> GetAccesEntryFilers(string[] args)
+        public static List<ISetting> GetSettings(string[] args)
         {
-            List<AccessEntryFilterBase> ret = GetInstancesOfType<AccessEntryFilterBase>();
-            ret.Add(new AccessEntryFilterFieldMatchesValue("Address", e => e.RemoteAddress));
+            List<ISetting> ret = GetInstancesOfType<ISetting>(t => !typeof(IFilter).IsAssignableFrom(t));
+            ret.Add(new IntSetting(Setting.AddressCountSetting, 25, 1, null));
+            ret.Add(new IntSetting(Setting.EntryCountSetting, 5, 1, null));
+
+            return ret;
+        }
+
+        public static List<IFilter> GetAccesEntryFilers(string[] args)
+        {
+            List<IFilter> ret = GetInstancesOfType<IFilter>();
+            ret.Add(new FieldValueFilter("Address", e => e.RemoteAddress));
 
             return ret;
         }

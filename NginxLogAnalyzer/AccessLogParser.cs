@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using NginxLogAnalyzer.Filter;
+using NginxLogAnalyzer.Filters;
 using NginxLogAnalyzer.Sources;
 
 namespace NginxLogAnalyzer
@@ -69,9 +69,9 @@ namespace NginxLogAnalyzer
             };
         }
 
-        private static bool AccessEntryMatchesFilters(AccessEntry entry, IEnumerable<AccessEntryFilterBase> accessEntryFilters)
+        private static bool AccessEntryMatchesFilters(AccessEntry entry, IEnumerable<IFilter> accessEntryFilters)
         {
-            foreach (AccessEntryFilterBase item in accessEntryFilters)
+            foreach (IFilter item in accessEntryFilters)
             {
                 if (!item.HasValue)
                     continue;
@@ -83,7 +83,7 @@ namespace NginxLogAnalyzer
             return true;
         }
 
-        private static void ParseStream(Stream stream, Dictionary<string, RemoteAddress> addresses, IEnumerable<AccessEntryFilterBase> accessEntryFilters)
+        private static void ParseStream(Stream stream, Dictionary<string, RemoteAddress> addresses, IEnumerable<IFilter> accessEntryFilters)
         {
             StreamReader reader = new StreamReader(stream, true);
 
@@ -105,7 +105,7 @@ namespace NginxLogAnalyzer
             }
         }
 
-        public static List<RemoteAddress> ReadSources(Dictionary<string, ILogSource> sourceParamAndSource, List<AccessEntryFilterBase> accessEntryFilters)
+        public static List<RemoteAddress> ReadSources(Dictionary<string, ILogSource> sourceParamAndSource, List<IFilter> accessEntryFilters)
         {
             Dictionary<string, RemoteAddress> ret = new Dictionary<string, RemoteAddress>();
             foreach (KeyValuePair<string, ILogSource> item in sourceParamAndSource)

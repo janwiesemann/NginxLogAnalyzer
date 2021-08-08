@@ -3,7 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using NginxLogAnalyzer.Analyzer;
 using NginxLogAnalyzer.Sources;
-using NginxLogAnalyzer.Filter;
+using NginxLogAnalyzer.Filters;
+using NginxLogAnalyzer.Settings;
 
 namespace NginxLogAnalyzer
 {
@@ -11,20 +12,30 @@ namespace NginxLogAnalyzer
     {
         public static void Main(string[] args)
         {
-            List<ILogSource> sources = Setup.GetLogSources(args);
-            List<AccessEntryFilterBase> accessEntryFilters = Setup.GetAccesEntryFilers(args);
-
             WriteHeader("Source");
+            List<ILogSource> sources = Setup.GetLogSources(args);
             Dictionary<string, ILogSource> sourceParamAndSource = ParseLogSources(args, sources);
             if (sourceParamAndSource.Count == 0 && AddDefaultSource(sourceParamAndSource))
                 return;
+
+            WriteHeader("Filter");
+            List<IFilter> accessEntryFilters = Setup.GetAccesEntryFilers(args);
+            accessEntryFilters.ParseValues(args);
+
+            WriteHeader("Settings");
+            List<ISetting> settings = Setup.GetSettings(args);
+            settings.ParseValues(args);
+
+            WriteHeader("Switches");
+            List<char> switches = ParseSwitches(args);
+            if (switches.Count == 0)
+                Console.WriteLine("-A");
 
             WriteHeader("Reading");
             List<RemoteAddress> addresses = AccessLogParser.ReadSources(sourceParamAndSource, accessEntryFilters);
             if (addresses == null)
                 return;
 
-            List<char> switches = ParseSwitches(args);
             List<IAnalyzer> analyzers = Setup.GetAnalyzers(args);
 
             bool executeAll = switches.Count == 0 || switches.HasSwitch('A');
@@ -37,7 +48,7 @@ namespace NginxLogAnalyzer
 
                 try
                 {
-                    analyzer.Execute(addresses);
+                    analyzer.Execute(addresses, settings);
                 }
                 catch (Exception ex)
                 {
@@ -107,7 +118,16 @@ namespace NginxLogAnalyzer
                     continue;
 
                 for (int j = 1; j < args[i].Length; j++)
-                    ret.Add(args[i][j]);
+                {
+                    char switchChar = args[i][j];
+
+                    if (!ret.Contains(switchChar))
+                    {
+                        Console.WriteLine($"-{switchChar}");
+
+                        ret.Add(switchChar);
+                    }
+                }
             }
 
             return ret;

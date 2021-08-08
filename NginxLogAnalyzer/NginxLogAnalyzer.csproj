@@ -11,6 +11,7 @@
     <None Remove="Analyzer\" />
     <None Remove="Sources\" />
     <None Remove="Filters\" />
+    <None Remove="Settings\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2020.0.1" />
@@ -19,5 +20,6 @@
     <Folder Include="Analyzer\" />
     <Folder Include="Sources\" />
     <Folder Include="Filters\" />
+    <Folder Include="Settings\" />
   </ItemGroup>
 </Project>

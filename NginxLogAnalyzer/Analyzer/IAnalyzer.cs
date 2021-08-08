@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using NginxLogAnalyzer.Settings;
 
 namespace NginxLogAnalyzer.Analyzer
 {
@@ -6,7 +7,7 @@ namespace NginxLogAnalyzer.Analyzer
     {
         bool CanExecute(IEnumerable<char> switches);
 
-        void Execute(IEnumerable<RemoteAddress> addresses);
+        void Execute(IEnumerable<RemoteAddress> addresses, IEnumerable<ISetting> settings);
 
         string Name { get; }
     }

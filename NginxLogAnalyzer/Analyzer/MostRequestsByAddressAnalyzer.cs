@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NginxLogAnalyzer.Settings;
 
 namespace NginxLogAnalyzer.Analyzer
 {
@@ -12,6 +13,7 @@ namespace NginxLogAnalyzer.Analyzer
         {
             return switches.HasSwitch('a');
         }
+
         private static List<List<AccessEntry>> GroupRequests(List<AccessEntry> entries)
         {
             Dictionary<string, List<AccessEntry>> groupes = new Dictionary<string, List<AccessEntry>>();
@@ -31,27 +33,25 @@ namespace NginxLogAnalyzer.Analyzer
             return groupes.GetValuesAsList();
         }
 
-        public void Execute(IEnumerable<RemoteAddress> addresses)
+        public void Execute(IEnumerable<RemoteAddress> addresses, IEnumerable<ISetting> settings)
         {
-            int i = 0;
+            settings.GetCountSettings(out int addressCount, out int entryCount);
+
             foreach (RemoteAddress address in addresses.OrderByDescending(e => e.AccessEntrys.Count))
             {
                 Console.WriteLine(address.Address.PadRight(16) + " => " + address.AccessEntrys.Count);
 
-                int j = 0;
+                int ec = entryCount;
                 foreach (var item in GroupRequests(address.AccessEntrys).OrderByDescending(e => e.Count))
                 {
                     Console.WriteLine("\t" + item.Count.ToString().PadRight(3) + " => " + item.First().Request);
 
-                    j++;
-
-                    if (j >= 5)
+                    if (!Count.Continue(ref ec))
                         break;
                 }
 
-                i++;
 
-                if (i >= 10)
+                if (!Count.Continue(ref addressCount))
                     break;
             }
         }

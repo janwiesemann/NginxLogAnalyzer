@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NginxLogAnalyzer.Settings;
 
 namespace NginxLogAnalyzer.Analyzer
 {
@@ -13,8 +14,10 @@ namespace NginxLogAnalyzer.Analyzer
             return switches.HasSwitch('p');
         }
 
-        public void Execute(IEnumerable<RemoteAddress> addresses)
+        public void Execute(IEnumerable<RemoteAddress> addresses, IEnumerable<ISetting> settings)
         {
+            settings.GetCountSettings(out int addressCount, out int entryCount);
+
             Dictionary<string, int> counts = new Dictionary<string, int>();
             int totalCount = 0;
             foreach (var address in addresses)
@@ -34,7 +37,6 @@ namespace NginxLogAnalyzer.Analyzer
             if (totalCount == 0)
                 return;
 
-            int i = 0;
             foreach (var item in counts.OrderByDescending(i => i.Value))
             {
                 int percentage = (int)Math.Round((double)item.Value / totalCount * 100);
@@ -43,8 +45,7 @@ namespace NginxLogAnalyzer.Analyzer
                 ConsoleEx.WriteURI(item.Key);
                 Console.WriteLine();
 
-                i++;
-                if (i > 25)
+                if (!Count.Continue(ref addressCount))
                     break;
             }
         }
