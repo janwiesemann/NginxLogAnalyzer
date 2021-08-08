@@ -11,29 +11,13 @@ namespace NginxLogAnalyzer
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine(string.Join(" ", args));
-
             List<ILogSource> sources = Setup.GetLogSources(args);
             List<AccessEntryFilterBase> accessEntryFilters = Setup.GetAccesEntryFilers(args);
 
+            WriteHeader("Source");
             Dictionary<string, ILogSource> sourceParamAndSource = ParseLogSources(args, sources);
-            if (sourceParamAndSource.Count == 0)
-            {
-                WriteHeader("Source");
-
-                Console.WriteLine("No sources found!");
-
-                string dir = Setup.GetDefaultLogDir();
-                if (dir == null || !Directory.Exists(dir))
-                {
-                    Console.WriteLine("OS default can not be used!");
-
-                    return;
-                }
-
-                Console.WriteLine("Using " + dir);
-                sourceParamAndSource.Add(dir, new LogDirectorySource());
-            }
+            if (sourceParamAndSource.Count == 0 && AddDefaultSource(sourceParamAndSource))
+                return;
 
             WriteHeader("Reading");
             List<RemoteAddress> addresses = AccessLogParser.ReadSources(sourceParamAndSource, accessEntryFilters);
@@ -64,6 +48,24 @@ namespace NginxLogAnalyzer
             WriteHeader("Done");
         }
 
+        private static bool AddDefaultSource(Dictionary<string, ILogSource> sourceParamAndSource)
+        {
+            Console.WriteLine("No sources found!");
+
+            string dir = Setup.GetDefaultLogDir();
+            if (dir == null || !Directory.Exists(dir))
+            {
+                Console.WriteLine("OS default can not be used!");
+
+                return false;
+            }
+
+            Console.WriteLine("Using " + dir);
+            sourceParamAndSource.Add(dir, new LogDirectorySource());
+
+            return true;
+        }
+
         private static Dictionary<string, ILogSource> ParseLogSources(string[] args, IEnumerable<ILogSource> sources)
         {
             Dictionary<string, ILogSource> ret = new Dictionary<string, ILogSource>();
@@ -73,15 +75,23 @@ namespace NginxLogAnalyzer
                 if (args[i].StartsWith("-"))
                     continue;
 
+                bool foundSource = false;
                 foreach (ILogSource item in sources)
                 {
                     if (item.SourceMatches(args[i]))
                     {
                         ret.TryAdd(args[i], item);
 
+                        Console.WriteLine($"Using {item.GetType().Name} as source handler for {args[i]}");
+
+                        foundSource = true;
+
                         break;
                     }
                 }
+
+                if (!foundSource)
+                    Console.WriteLine("Found no valid source handler for " + args[i]);
             }
 
             return ret;
