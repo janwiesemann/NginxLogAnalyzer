@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using NginxLogAnalyzer.Analyzer;
 using NginxLogAnalyzer.Filter;
@@ -9,23 +10,51 @@ namespace NginxLogAnalyzer
 {
     internal static class Setup
     {
+        private static List<T> GetInstancesOfType<T>()
+        {
+            List<T> ret = new List<T>();
+            foreach (Type type in typeof(T).Assembly.GetTypes())
+            {
+                if (!typeof(T).IsAssignableFrom(type))
+                    continue;
+
+                if (type.IsAbstract)
+                    continue;
+
+                if (type.IsInterface)
+                    continue;
+
+                bool hasConstructorWithouParameters = false;
+                foreach (ConstructorInfo ctr in type.GetConstructors())
+                {
+                    if (ctr.GetParameters().Length == 0)
+                    {
+                        hasConstructorWithouParameters = true;
+                        break;
+                    }
+                }
+
+                if (!hasConstructorWithouParameters)
+                    continue;
+
+                T t = (T)Activator.CreateInstance(type);
+                ret.Add(t);
+            }
+
+            return ret;
+        }
+
         public static List<AccessEntryFilterBase> GetAccesEntryFilers(string[] args)
         {
-            return new List<AccessEntryFilterBase>
-            {
-                new AccessEntryFilterFieldMatchesValue("Address", e => e.RemoteAddress),
-                new AccessEntryFilterAccessTime()
-            };
+            List<AccessEntryFilterBase> ret = GetInstancesOfType<AccessEntryFilterBase>();
+            ret.Add(new AccessEntryFilterFieldMatchesValue("Address", e => e.RemoteAddress));
+
+            return ret;
         }
 
         public static List<ILogSource> GetLogSources(string[] args)
         {
-            return new List<ILogSource>
-            {
-                new LogDirectorySource(),
-                new LogFileSource(),
-                new LogSFTPSource()
-            };
+            return GetInstancesOfType<ILogSource>();
         }
 
         public static string GetDefaultLogDir()
@@ -41,11 +70,7 @@ namespace NginxLogAnalyzer
 
         internal static List<IAnalyzer> GetAnalyzers(string[] args)
         {
-            return new List<IAnalyzer>
-            {
-                new MostRequestedPagesAnalyzer(),
-                new MostRequestsByAddressAnalyzer()
-            };
+            return GetInstancesOfType<IAnalyzer>();
         }
     }
 }
