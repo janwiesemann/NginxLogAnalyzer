@@ -8,5 +8,12 @@ namespace NginxLogAnalyzer.Sources
         bool SourceMatches(string str);
 
         void ReadFile(string str, Action<Stream> parseSteamCallback);
+
+        /// <summary>
+        /// Removes any confidential informations for thew input for printing in the console
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        string GetSafeValuestring(string str);
     }
 }

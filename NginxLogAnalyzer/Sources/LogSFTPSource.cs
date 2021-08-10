@@ -8,6 +8,14 @@ namespace NginxLogAnalyzer.Sources
 {
     internal class LogSFTPSource : ILogSource
     {
+        public string GetSafeValuestring(string str)
+        {
+            int i = str.IndexOf(':');
+            int j = str.IndexOf('@', i);
+
+            return str.Substring(0, i + 1) + "***" + str.Substring(j);
+        }
+
         public void ReadFile(string str, Action<Stream> parseSteamCallback)
         {
             Uri uri = new Uri(str, UriKind.Absolute);

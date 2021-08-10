@@ -174,7 +174,7 @@ namespace NginxLogAnalyzer
             foreach (KeyValuePair<string, ILogSource> item in sourceParamAndSource)
             {
                 DateTime start = DateTime.Now;
-                Console.Write($"Reading source {item.Value.GetType().Name} ({item.Key})...");
+                Console.Write($"Reading source {item.Value.GetType().Name} ({item.Value.GetSafeValuestring(item.Key)})...");
 
                 try
                 {

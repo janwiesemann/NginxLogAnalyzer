@@ -93,7 +93,7 @@ namespace NginxLogAnalyzer
                     {
                         ret.TryAdd(args[i], item);
 
-                        Console.WriteLine($"Using {item.GetType().Name} as source handler for {args[i]}");
+                        Console.WriteLine($"Using {item.GetType().Name} as source handler for {item.GetSafeValuestring(args[i])}");
 
                         foundSource = true;
 

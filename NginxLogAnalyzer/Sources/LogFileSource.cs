@@ -18,6 +18,8 @@ namespace NginxLogAnalyzer.Sources
             return ret;
         }
 
+        public string GetSafeValuestring(string str) => str;
+
         public void ReadFile(string str, Action<Stream> parseSteamCallback)
         {
             using (Stream stream = OpenFile(str))

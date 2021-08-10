@@ -7,6 +7,8 @@ namespace NginxLogAnalyzer.Sources
     {
         private readonly LogFileSource fileSource = new LogFileSource();
 
+        public string GetSafeValuestring(string str) => str;
+
         public void ReadFile(string str, Action<Stream> parseSteamCallback)
         {
             foreach (string item in Directory.GetFiles(str))
