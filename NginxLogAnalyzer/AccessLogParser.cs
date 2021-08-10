@@ -140,7 +140,7 @@ namespace NginxLogAnalyzer
             return true;
         }
 
-        private static void ParseStream(Stream stream, Dictionary<string, RemoteAddress> addresses, IEnumerable<IFilter> accessEntryFilters)
+        private static void ParseStream(Stream stream, Dictionary<string, RemoteAddress> addresses, IEnumerable<IFilter> accessEntryFilters, ref int totalRequestCount, ref int totalRequestCountWithMatch)
         {
             StreamReader reader = new StreamReader(stream, true);
 
@@ -149,8 +149,12 @@ namespace NginxLogAnalyzer
             {
                 AccessEntry entry = ParseAccessLine(line);
 
+                totalRequestCount++;
+
                 if (!AccessEntryMatchesFilters(entry, accessEntryFilters))
                     continue;
+
+                totalRequestCountWithMatch++;
 
                 if (!addresses.TryGetValue(entry.RemoteAddress, out RemoteAddress addr))
                 {
@@ -164,6 +168,8 @@ namespace NginxLogAnalyzer
 
         public static List<RemoteAddress> ReadSources(Dictionary<string, ILogSource> sourceParamAndSource, List<IFilter> accessEntryFilters)
         {
+            int totalRequestCount = 0;
+            int totalRequestCountWithMatch = 0;
             Dictionary<string, RemoteAddress> ret = new Dictionary<string, RemoteAddress>();
             foreach (KeyValuePair<string, ILogSource> item in sourceParamAndSource)
             {
@@ -172,7 +178,7 @@ namespace NginxLogAnalyzer
 
                 try
                 {
-                    item.Value.ReadFile(item.Key, stream => ParseStream(stream, ret, accessEntryFilters));
+                    item.Value.ReadFile(item.Key, stream => ParseStream(stream, ret, accessEntryFilters, ref totalRequestCount, ref totalRequestCountWithMatch));
 
                     Console.WriteLine($" finished in {Math.Round((DateTime.Now - start).TotalMilliseconds, 1)}ms");
                 }
@@ -182,6 +188,9 @@ namespace NginxLogAnalyzer
                     Console.WriteLine(ex);
                 }
             }
+
+            Console.WriteLine();
+            Console.WriteLine($"Found {ret.Count} unique addresses with a total of {totalRequestCountWithMatch} (unfiltered {totalRequestCount}) requests.");
 
             return ret.GetValuesAsList();
         }
