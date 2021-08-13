@@ -5,6 +5,7 @@ using NginxLogAnalyzer.Analyzer;
 using NginxLogAnalyzer.Sources;
 using NginxLogAnalyzer.Filters;
 using NginxLogAnalyzer.Settings;
+using NginxLogAnalyzer.Parser;
 
 namespace NginxLogAnalyzer
 {
@@ -31,8 +32,13 @@ namespace NginxLogAnalyzer
             if (switches.Count == 0)
                 Console.WriteLine("-A");
 
+            WriteHeader("Format");
+            List<ITextBlock> formatBlocks = ParseFormat(settings);
+            if (formatBlocks == null)
+                return;
+
             WriteHeader("Reading");
-            List<RemoteAddress> addresses = AccessLogParser.ReadSources(sourceParamAndSource, accessEntryFilters);
+            List<RemoteAddress> addresses = LogParser.ReadSources(sourceParamAndSource, accessEntryFilters, formatBlocks);
             if (addresses == null)
                 return;
 
@@ -57,6 +63,16 @@ namespace NginxLogAnalyzer
             }
 
             WriteHeader("Done");
+        }
+
+        private static List<ITextBlock> ParseFormat(List<ISetting> settings)
+        {
+            if (!settings.TryGetValue("format", out string format))
+                throw new InvalidOperationException();
+
+            Console.WriteLine(format);
+
+            return FormatParser.ParseFormat(format);                    
         }
 
         private static bool AddDefaultSource(Dictionary<string, ILogSource> sourceParamAndSource)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using NginxLogAnalyzer.Parser;
 
 namespace NginxLogAnalyzer
 {
@@ -19,6 +20,20 @@ namespace NginxLogAnalyzer
             sb.AppendMaxLength(10, Version);
 
             return sb.ToString();
+        }
+
+        public static Request ParseRequest(string line)
+        {
+            Request ret = new Request();
+            int offset = -1;
+
+            ret.Methode = ParseHelper.ParseUntill(line, ref offset, (c, sb) => char.IsWhiteSpace(c));
+            offset++;
+            ret.URI = ParseHelper.ParseUntill(line, ref offset, (c, sb) => char.IsWhiteSpace(c));
+            offset++;
+            ret.Version = ParseHelper.ParseUntill(line, ref offset, (c, sb) => c == '\0');
+
+            return ret;
         }
     }
 }

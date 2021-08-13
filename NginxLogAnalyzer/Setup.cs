@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using NginxLogAnalyzer.Analyzer;
 using NginxLogAnalyzer.Filters;
+using NginxLogAnalyzer.Parser;
 using NginxLogAnalyzer.Settings;
 using NginxLogAnalyzer.Sources;
 
@@ -15,6 +16,21 @@ namespace NginxLogAnalyzer
         private static List<T> GetInstancesOfType<T>()
         {
             return GetInstancesOfType<T>(null);
+        }
+
+        internal static List<IVariable> GetFormatVariables()
+        {
+            List<IVariable> ret = GetInstancesOfType<IVariable>();
+            ret.Add(new StringVariable("remote_addr", (s, e) => e.RemoteAddress = s));
+            ret.Add(new StringVariable("remote_user", (s, e) => e.RemoteUser = s));
+            ret.Add(new DateTimeVariable("time_local", (dt, e) => e.DateTime = dt));
+            ret.Add(new StringVariable("request", (s, e) => e.Request = Request.ParseRequest(s)));
+            ret.Add(new IntVariable("status", (i, e) => e.StatusCode = i));
+            ret.Add(new StringVariable("body_bytes_sent", (i, e) => { }));
+            ret.Add(new StringVariable("http_referer", (i, e) => { }));
+            ret.Add(new StringVariable("http_user_agent", (i, e) => { }));
+
+            return ret;
         }
 
         private static List<T> GetInstancesOfType<T>(Predicate<Type> additionalTypeFilter)
