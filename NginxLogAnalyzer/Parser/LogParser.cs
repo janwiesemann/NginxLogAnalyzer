@@ -74,10 +74,10 @@ namespace NginxLogAnalyzer.Parser
 
                     totalRequestCountWithMatch++;
 
-                    if (!addresses.TryGetValue(entry.RemoteAddress, out RemoteAddress addr))
+                    if (!addresses.TryGetValue(entry.RemoteAddr, out RemoteAddress addr))
                     {
-                        addr = new RemoteAddress(entry.RemoteAddress);
-                        addresses.Add(entry.RemoteAddress, addr);
+                        addr = new RemoteAddress(entry.RemoteAddr);
+                        addresses.Add(entry.RemoteAddr, addr);
                     }
 
                     addr.AccessEntrys.Add(entry);

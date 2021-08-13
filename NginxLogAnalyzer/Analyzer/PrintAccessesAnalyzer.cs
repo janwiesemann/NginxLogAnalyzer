@@ -25,9 +25,9 @@ namespace NginxLogAnalyzer.Analyzer
                     allItems.Add(new KeyValuePair<AccessEntry, RemoteAddress>(entry, address));
             }
 
-            foreach (KeyValuePair<AccessEntry, RemoteAddress> entry in allItems.OrderByDescending(i => i.Key.DateTime))
+            foreach (KeyValuePair<AccessEntry, RemoteAddress> entry in allItems.OrderByDescending(i => i.Key.TimeLocal))
             {
-                Console.WriteLine($"{entry.Value.Address.PadRight(4 * 3 + 3)}: {entry.Key.DateTime} => {entry.Key.Request?.ToString()}");
+                Console.WriteLine($"{entry.Value.Address.PadRight(4 * 3 + 3)}: {entry.Key.TimeLocal} => {entry.Key.Request?.ToString()}");
 
                 if (!Count.Continue(ref addressCount))
                     break;

@@ -10,7 +10,7 @@ namespace NginxLogAnalyzer.Filters
 
         public override bool Matches(AccessEntry entry)
         {
-            return entry.DateTime >= Value;
+            return entry.TimeLocal >= Value;
         }
 
         protected override bool TryParse(string value, out DateTime res)
