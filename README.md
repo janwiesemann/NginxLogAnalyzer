@@ -61,7 +61,7 @@ Name | Example | Info
 --- | --- | ---
 Directory | `/var/log/nginx/` | This will load all files starting with the name `access.`(`access.log`, `access.log.1`, `access.log.2.gz`)
 File | `/var/log/nginx/access.log` | Text file or `.gz` compressed (compressed Files must end with `.gz`)
-SFTP | `sftp://user:password@10.0.0.1/var/log/nginx/` | This can be used to specify a remote Server as Source. This will connect to `10.0.0.1` using `user` as username, `password` as password and analyze all files in `/var/log/nginx` Currently you can not use a Key file as Login.
+SFTP | `sftp://user:password@10.0.0.1/var/log/nginx/` | This can be used to specify a remote Server as Source. This will connect to `10.0.0.1` using `user` as username, `password` as password and analyze all files in `/var/log/nginx` Currently you can not use a Key file as login.
 
 You can use a single Source 
 
@@ -92,16 +92,27 @@ Switch|Name|Description
  `-A` | All | this will set all Switches (default)
  `-a` | Analyze by addresses | This will display a list where requests are grouped by IP
  `-p` | Analyze page accesses | This will display a list with the most requested pages
+ `-r` | Last requests | Displays the last requests
 
-## Filter
+## Filter/Settings
 
-By default no filters are set. Filters have to start with `--` and have to provide a value after `=`. For example: `--address=10.0.0.112` can be used this way:
+By default no settings or filers are set. Filters and settings have to start with `--` and have to provide a value after `=`. For example: `--address=10.0.0.112` can be used this way:
 
 ```shell
 dotnet NginxLogAnalyzer.dll --address=10.0.0.112
 ```
 
-Following Filters are supported:
+If your value contains whitespaces you have to escape them. This is different on every OS. On Windows you can use this `"--address=just a value"` format. On Mac you can escape Whitespaces with a `\` => `--address=just\ a\ value`
+
+### List of Settings
+
+Name | Format | Default | Description
+--- | --- | --- | --
+`--count` | Number or `ALL` | `25` | Changes the number of groups displayed (typicaly containing the address)
+`--entrys` | Number or `ALL` | `5` | Changes the number of entrys displayed (subgroups of `--count`)
+`--format` | String | `$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent"` | Your Nginx log format string. You can copy and paste this from your config.
+
+### List of Filters
 
 Name | Format | Description
 --- | --- | ---
@@ -127,12 +138,6 @@ dotnet NginxLogAnalyzer.dll /var/log/nginx/ -A
 This will analyze all logs in `/var/log/nginx/` with all switches set (`-A`).
 
 ``` shell
-
-=====================================================
-Using Switches
-
-Addresses
-Pages
 
 =====================================================
 Most Requests by Addresse
