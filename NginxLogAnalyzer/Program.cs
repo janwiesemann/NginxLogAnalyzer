@@ -153,7 +153,7 @@ namespace NginxLogAnalyzer
         {
             Console.WriteLine();
 
-            for (int i = 0; i < Console.WindowWidth-1; i++)
+            for (int i = 0; i < Math.Max(Console.WindowWidth - 1, 16); i++)
                 Console.Write('=');
 
             Console.WriteLine('=');
