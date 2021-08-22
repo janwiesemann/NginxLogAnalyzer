@@ -406,3 +406,4 @@ ASALocalRun/
 
 testLogs/*
 mono_crash*
+config.php
