@@ -46,7 +46,7 @@
     }
 
     //set default config values
-    SetDefaultConfigValue($config, "sources", "");
+    SetDefaultConfigValue($config, "sources", null);
     SetDefaultConfigValue($config, "loginKey", null);
     SetDefaultConfigValue($config, "count", 50);
     SetDefaultConfigValue($config, "entryCount", 10);
@@ -100,7 +100,7 @@
         $config["gitRefresh"] = isset($_POST["gitRefresh"]);
 
         $cfgStr = "<?php header('Location: ".$_SERVER["PHP_SELF"]."'); exit(); ?>".json_encode($config);
-        file_put_contents("config.php", $cfgStr);  
+        file_put_contents("config.php", $cfgStr, FILE_USE_INCLUDE_PATH);  
 
         header("Location: ".$_SERVER["PHP_SELF"]."?configure");
         exit();
