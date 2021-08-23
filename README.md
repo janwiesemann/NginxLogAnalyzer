@@ -10,7 +10,7 @@ Replace `{ARGUMENTS}` at the end with your arguments.
 wget https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
 sudo dpkg -i packages-microsoft-prod.deb && \
 rm packages-microsoft-prod.deb && \
-sudo apt-get update  \
+sudo apt-get update  && \
 audo apt-get install dotnet-sdk-5.0 git -y && \
 git clone https://github.com/janwiesemann/NginxLogAnalyzer.git && \
 dotnet run --project ./NginxLogAnalyzer/NginxLogAnalyzer/NginxLogAnalyzer.csproj -- {ARGUMENTS}
