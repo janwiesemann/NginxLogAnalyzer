@@ -194,8 +194,6 @@
                     </form>
                 <?php
 
-                if(getenv(""))
-
                 ExecuteApp($config["dotnetCommand"]." ".$config["sources"]." ".$args);
             }
         ?>
