@@ -65,13 +65,14 @@ namespace NginxLogAnalyzer.Analyzer
 
             foreach (Entry item in groups)
             {
-                Console.WriteLine(item.UserAgent + " => " + item.Count);
+                Console.WriteLine(item.Count.ToString().PadRight(4) + ": " + item.UserAgent);
 
+                int ec = entryCount;
                 foreach (KeyValuePair<string, int> counts in item.AddressCount.OrderByDescending(i => i.Value))
                 {
                     Console.WriteLine("\t" + counts.Value.ToString().PadRight(3) + " => " + counts.Key);
 
-                    if (!Count.Continue(ref entryCount))
+                    if (!Count.Continue(ref ec))
                         break;
                 }
 
