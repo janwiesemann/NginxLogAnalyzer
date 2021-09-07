@@ -1,6 +1,6 @@
 <?php
     $config = array();
-    //All settings will be stored in a file calles config.php. A php file is used to prevent acces to the settings.
+    //All settings will be stored in a file calles config.php. A php file is used to prevent access to the settings.
 
     function SetDefaultConfigValue(&$cfg, $key, $value) {
         if(!array_key_exists($key, $cfg) || (array_key_exists($key, $cfg) && empty($cfg[$key]))) {
@@ -193,6 +193,8 @@
                         Arguments: <input type="text" name="args" value="<?php echo $args; ?>"/> <input type="submit" value="Reload">
                     </form>
                 <?php
+
+                if(getenv(""))
 
                 ExecuteApp($config["dotnetCommand"]." ".$config["sources"]." ".$args);
             }
