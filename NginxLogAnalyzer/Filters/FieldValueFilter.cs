@@ -15,7 +15,6 @@ namespace NginxLogAnalyzer.Filters
         {
             string field = fieldSelect(entry);
 
-
             return field == Value;
         }
 

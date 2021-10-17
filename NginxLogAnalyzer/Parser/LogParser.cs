@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using NginxLogAnalyzer.Filters;
+using NginxLogAnalyzer.Settings;
 using NginxLogAnalyzer.Sources;
 
 namespace NginxLogAnalyzer.Parser
 {
     internal static class LogParser
     {
-        public static List<RemoteAddress> ReadSources(Dictionary<string, ILogSource> sourceParamAndSource, List<IFilter> accessEntryFilters, List<ITextBlock> format)
+        public static List<RemoteAddress> ReadSources(Dictionary<string, ILogSource> sourceParamAndSource, List<IFilter> accessEntryFilters, List<ITextBlock> format, List<ISetting> settings)
         {
             int totalRequestCount = 0;
             int totalRequestCountWithMatch = 0;
@@ -21,7 +22,7 @@ namespace NginxLogAnalyzer.Parser
 
                 try
                 {
-                    item.Value.ReadFile(item.Key, stream => ParseStream(stream, ret, accessEntryFilters, ref totalRequestCount, ref totalRequestCountWithMatch, format));
+                    item.Value.ReadFile(item.Key, stream => ParseStream(stream, ret, accessEntryFilters, ref totalRequestCount, ref totalRequestCountWithMatch, format), settings);
 
                     Console.WriteLine($" finished in {Math.Round((DateTime.Now - start).TotalMilliseconds, 1)}ms");
                 }

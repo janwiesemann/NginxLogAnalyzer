@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NginxLogAnalyzer.Settings
 {
@@ -46,20 +47,32 @@ namespace NginxLogAnalyzer.Settings
                 Console.WriteLine("Found none");
         }
 
-        public static bool TryGetSetting(this IEnumerable<ISetting> settings, string name, out ISetting setting)
+        public static IEnumerable<ISetting> TryGetSettings(this IEnumerable<ISetting> settings, string name)
         {
             foreach (ISetting item in settings)
             {
                 if (item.ParameterName == name)
-                {
-                    setting = item;
-
-                    return true;
-                }
+                    yield return item;
             }
+        }
 
-            setting = null;
-            return false;
+        public static bool TryGetSetting(this IEnumerable<ISetting> settings, string name, out ISetting setting)
+        {
+            setting = TryGetSettings(settings, name).FirstOrDefault();
+            return setting != null;
+        }
+
+
+        public static IEnumerable<T> TryGetValues<T>(this IEnumerable<ISetting> settings, string name)
+        {
+            foreach (ISetting item in TryGetSettings(settings, name))
+            {
+                object val = item.Value;
+                if (val == null || !typeof(T).IsAssignableFrom(val.GetType()))
+                  yield  return default(T);
+
+                yield return (T)val;
+            }
         }
 
         public static bool TryGetValue<T>(this IEnumerable<ISetting> settings, string name, out T value)

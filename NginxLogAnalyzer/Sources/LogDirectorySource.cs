@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using NginxLogAnalyzer.Settings;
 
 namespace NginxLogAnalyzer.Sources
 {
@@ -9,7 +11,7 @@ namespace NginxLogAnalyzer.Sources
 
         public string GetSafeValuestring(string str) => str;
 
-        public void ReadFile(string str, Action<Stream> parseSteamCallback)
+        public void ReadFile(string str, Action<Stream> parseSteamCallback, List<ISetting> settings)
         {
             foreach (string item in Directory.GetFiles(str))
             {
@@ -17,7 +19,7 @@ namespace NginxLogAnalyzer.Sources
                 if (name.IndexOf("access", StringComparison.OrdinalIgnoreCase) != 0)
                     continue;
 
-                fileSource.ReadFile(item, parseSteamCallback);
+                fileSource.ReadFile(item, parseSteamCallback, settings);
             }
         }
 

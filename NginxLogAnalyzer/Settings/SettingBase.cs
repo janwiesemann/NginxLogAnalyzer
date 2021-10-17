@@ -30,9 +30,14 @@ namespace NginxLogAnalyzer.Settings
 
         protected abstract bool TryParse(string value, out T res);
 
+        protected virtual string GetValueString()
+        {
+            return Value?.ToString();
+        }
+
         public override string ToString()
         {
-            return $"{ParameterName}: {(HasValue ? Value?.ToString() : "empty")}";
+            return $"{ParameterName}: {(HasValue ? GetValueString() : "empty")}";
         }
     }
 }

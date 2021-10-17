@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using NginxLogAnalyzer.Settings;
 
 namespace NginxLogAnalyzer.Sources
 {
-    public class LogFileSource : ILogSource
+    internal class LogFileSource : ILogSource
     {
         private static Stream OpenFile(string path)
         {
@@ -20,7 +22,7 @@ namespace NginxLogAnalyzer.Sources
 
         public string GetSafeValuestring(string str) => str;
 
-        public void ReadFile(string str, Action<Stream> parseSteamCallback)
+        public void ReadFile(string str, Action<Stream> parseSteamCallback, List<ISetting> settings)
         {
             using (Stream stream = OpenFile(str))
                 parseSteamCallback(stream);

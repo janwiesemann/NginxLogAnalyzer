@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using NginxLogAnalyzer.Settings;
 using Renci.SshNet;
 using Renci.SshNet.Sftp;
 
@@ -16,7 +19,18 @@ namespace NginxLogAnalyzer.Sources
             return str.Substring(0, i + 1) + "***" + str.Substring(j);
         }
 
-        public void ReadFile(string str, Action<Stream> parseSteamCallback)
+        private static SftpClient GetNewClient(string host, int port, string username, string password, PrivateKeyFile[] keyFiles)
+        {
+            if (!string.IsNullOrEmpty(password))
+                return new SftpClient(host, port, username, password);
+
+            if (keyFiles == null || keyFiles.Length == 0)
+                throw new NotSupportedException("Login without password or key is not supported!");
+
+            return new SftpClient(host, port, username, keyFiles);
+        }
+
+        public void ReadFile(string str, Action<Stream> parseSteamCallback, List<ISetting> settings)
         {
             Uri uri = new Uri(str, UriKind.Absolute);
             string username = uri.UserInfo;
@@ -31,7 +45,9 @@ namespace NginxLogAnalyzer.Sources
                 username = username.Substring(0, i);
             }
 
-            using(SftpClient client = new SftpClient(uri.Host, username, password))
+            PrivateKeyFile[] keyFiles = settings.TryGetValues<PrivateKeyFile>("keyFile").ToArray();
+
+            using(SftpClient client = GetNewClient(uri.Host, uri.IsDefaultPort ? 22 : uri.Port, username, password, keyFiles))
             {
                 client.Connect();
 

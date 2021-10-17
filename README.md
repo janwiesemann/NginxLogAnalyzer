@@ -24,6 +24,7 @@ Argument | Info
 `/var/log/nginx` | Analyse `/var/log/nginx`
 `sftp://root:1234@10.0.0.1/var/log/nginx` | Analyse `/var/log/nginx` on server `10.0.0.1` using `root` as username and `123` as password
 `/var/log/nginx sftp://root:1234@10.0.0.1/var/log/nginx` | Analyse `/var/log/nginx` and `/var/log/nginx` on server `10.0.0.1` using `root` as username and `123` as password
+`/var/log/nginx sftp://root@10.0.0.1/var/log/nginx --keyfile=.ssh/id_servera  --keyfile=.ssh/serverb:123` | Analyse `/var/log/nginx` and `/var/log/nginx` on server `10.0.0.1` using `root` as username, `.ssh/id_servera` as keyfile and `.ssh/serverb` as keyfile with password `123`
 `/var/log/nginx --address=10.0.0.2` | Analyse `/var/log/nginx` showing only requests form 10.0.0.2
 
 ## Build
@@ -77,7 +78,7 @@ Name | Example | Info
 --- | --- | ---
 Directory | `/var/log/nginx/` | This will load all files starting with the name `access.`(`access.log`, `access.log.1`, `access.log.2.gz`)
 File | `/var/log/nginx/access.log` | Text file or `.gz` compressed (compressed Files must end with `.gz`)
-SFTP | `sftp://user:password@10.0.0.1/var/log/nginx/` | This can be used to specify a remote Server as Source. This will connect to `10.0.0.1` using `user` as username, `password` as password and analyse all files in `/var/log/nginx` Currently you can not use a Key file as login.
+SFTP | `sftp://user:password@10.0.0.1/var/log/nginx/` | This can be used to specify a remote Server as Source. This will connect to `10.0.0.1` using `user` as username, `password` as password and analyse all files in `/var/log/nginx`. You can use `--keyfile` to specify a private keyfile. For more details see `Filter/Settings -> List of Settings -> --keyfile`
 
 You can use a single Source
 
@@ -127,6 +128,7 @@ Name | Format | Default | Description
 `--count` | Number or `ALL` | `25` | Changes the number of groups displayed (typicaly containing the address)
 `--entrys` | Number or `ALL` | `5` | Changes the number of entrys displayed (subgroups of `--count`)
 `--format` | String | `$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent"` | Your Nginx log format string. You can copy and paste this from your config.
+`--keyfile` | String |  | SFTP private keyfile. Use `--keyfile=.ssh/servera` or `--keyfile=.ssh/serverb:123` for a encrypted keyfile. Supported formats can be found at <https://github.com/sshnet/SSH.NET>
 
 ### List of Filters
 
@@ -136,6 +138,8 @@ Name | Format | Description
 `--accessTime` | `dd.MM.yyyy-hh:mm:ss` (i.e. `01.08.2021-15:30:00`) | Newer than this date
 
 ## Example output
+
+I've replaced all IPs by `***.***.***.***`. If you run this app, they will be displayed correctly.
 
 ```text
 =================
