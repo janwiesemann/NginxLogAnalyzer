@@ -136,6 +136,7 @@ Name | Format | Description
 --- | --- | ---
 `--address` | Any | Filters by address
 `--accessTime` | `dd.MM.yyyy-hh:mm:ss` (i.e. `01.08.2021-15:30:00`) | Newer than this date
+`--onlypublicaddresses` |  | Excludes private addresses (10.0.0.0/8, 127.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
 
 ## Example output
 
