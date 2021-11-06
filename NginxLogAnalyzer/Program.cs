@@ -6,6 +6,7 @@ using NginxLogAnalyzer.Sources;
 using NginxLogAnalyzer.Filters;
 using NginxLogAnalyzer.Settings;
 using NginxLogAnalyzer.Parser;
+using System.Diagnostics;
 
 namespace NginxLogAnalyzer
 {
@@ -63,6 +64,9 @@ namespace NginxLogAnalyzer
             }
 
             WriteHeader("Done");
+
+            if (Debugger.IsAttached)
+                Console.ReadKey();
         }
 
         private static List<ITextBlock> ParseFormat(List<ISetting> settings)
