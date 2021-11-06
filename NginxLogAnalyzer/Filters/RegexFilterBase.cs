@@ -31,7 +31,7 @@ namespace NginxLogAnalyzer.Filters
 
         protected virtual RegexOptions GetOptions()
         {
-            return RegexOptions.IgnoreCase;
+            return RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace;
         }
 
         protected sealed override bool TryParse(string value, out string res)

@@ -6,10 +6,13 @@ namespace NginxLogAnalyzer.Filters
     {
         private readonly Func<AccessEntry, string> fieldSelect;
 
-        public FieldValueFilter(string paramName, Func<AccessEntry, string> fieldSelect) : base(paramName)
+        public FieldValueFilter(string paramName, FilterGroups group, Func<AccessEntry, string> fieldSelect) : base(paramName)
         {
+            Group = group;
             this.fieldSelect = fieldSelect;
         }
+
+        public override FilterGroups Group { get; }
 
         public override bool Matches(AccessEntry entry)
         {

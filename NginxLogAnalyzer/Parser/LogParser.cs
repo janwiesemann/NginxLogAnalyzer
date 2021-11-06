@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NginxLogAnalyzer.Filters;
 using NginxLogAnalyzer.Settings;
 using NginxLogAnalyzer.Sources;
@@ -42,12 +43,27 @@ namespace NginxLogAnalyzer.Parser
 
         private static bool AccessEntryMatchesFilters(AccessEntry entry, IEnumerable<IFilter> accessEntryFilters)
         {
+            Dictionary<FilterGroups, bool> resuls = new Dictionary<FilterGroups, bool>();
             foreach (IFilter item in accessEntryFilters)
             {
                 if (!item.HasValue)
                     continue;
 
-                if (!item.Matches(entry))
+                bool hasKey = resuls.TryGetValue(item.Group, out bool res);
+                if (hasKey && res) //One filter of this group already matched. Further checks are not needet
+                    continue;
+
+                res = item.Matches(entry);
+                if (hasKey)
+                    resuls[item.Group] = res;
+                else
+                    resuls.Add(item.Group, res);
+            }
+
+            //checks if one filter is false
+            foreach (var item in resuls)
+            {
+                if (!item.Value)
                     return false;
             }
 

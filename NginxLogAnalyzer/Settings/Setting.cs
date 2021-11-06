@@ -3,6 +3,6 @@
     internal static class Setting
     {
         public const string AddressCountSetting = "count";
-        public const string EntryCountSetting = "entrys";
+        public const string EntryCountSetting = "entries";
     }
 }

@@ -7,6 +7,8 @@ namespace NginxLogAnalyzer.Filters
         public FilterBase(string paramName) : base(paramName) 
         { }
 
+        public virtual FilterGroups Group => FilterGroups.Default;
+
         public abstract bool Matches(AccessEntry entry);
     }
 }

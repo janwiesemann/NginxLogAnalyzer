@@ -70,7 +70,7 @@ namespace NginxLogAnalyzer
         public static List<IFilter> GetAccesEntryFilers(string[] args)
         {
             List<IFilter> ret = GetInstancesOfType<IFilter>();
-            ret.Add(new FieldValueFilter("Address", e => e.RemoteAddr));
+            ret.Add(new FieldValueFilter("Address", FilterGroups.AddressFilters, e => e.RemoteAddr));
 
             return ret;
         }

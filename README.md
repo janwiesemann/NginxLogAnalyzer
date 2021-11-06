@@ -126,7 +126,7 @@ If your value contains whitespaces you have to escape them. This is different on
 Name | Format | Default | Description
 --- | --- | --- | --
 `--count` | Number or `ALL` | `25` | Changes the number of groups displayed (typicaly containing the address)
-`--entrys` | Number or `ALL` | `5` | Changes the number of entrys displayed (subgroups of `--count`)
+`--entries` | Number or `ALL` | `5` | Changes the number of entries displayed (subgroups of `--count`)
 `--format` | String | `$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent"` | Your Nginx log format string. You can copy and paste this from your config.
 `--keyfile` | String |  | SFTP private keyfile. Use `--keyfile=.ssh/servera` or `--keyfile=.ssh/serverb:123` for a encrypted keyfile. Supported formats can be found at <https://github.com/sshnet/SSH.NET>
 
